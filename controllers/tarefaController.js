@@ -36,10 +36,18 @@ exports.getTarefaById = (req, res) => {
 exports.updateTarefa = (req, res) => {
     const { id } = req.params;
     const { tarefa } = req.body;
+
+    // Verifica se o usuário é admin antes de tentar atualizar a tarefa
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem atualizar ou deletar tarefas.' });
+    }
+
+    // Se for admin, tenta atualizar a tarefa
     db.run("UPDATE tarefas SET tarefa = ? WHERE id = ?", [tarefa, id], function (err) {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
+
         if (this.changes) {
             res.status(200).json({ message: 'Tarefa atualizada com sucesso!' });
         } else {
@@ -50,10 +58,18 @@ exports.updateTarefa = (req, res) => {
 
 exports.deleteTarefa = (req, res) => {
     const { id } = req.params;
+
+    // Verifica se o usuário é admin antes de tentar deletar a tarefa
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem atualizar ou deletar tarefas.' });
+    }
+
+    // Se for admin, tenta deletar a tarefa
     db.run("DELETE FROM tarefas WHERE id = ?", [id], function (err) {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
+
         if (this.changes) {
             res.status(200).json({ message: 'Tarefa removida com sucesso!' });
         } else {
